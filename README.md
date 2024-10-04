@@ -44,7 +44,7 @@ Antes de começar, certifique-se de ter o seguinte instalado:
    Abra seu terminal e execute:
 
    ```bash
-   git clone https://github.com/seu-usuario/conversor-moedas.git
+   git clone https://github.com/pcsouzafv/conversor-moedas.git
    ```
 
 2. **Compile o Código:**
