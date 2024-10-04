@@ -1,0 +1,111 @@
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.util.Scanner;
+import java.util.stream.Collectors;
+
+public class ConversorMoedas {
+    private static final String API_KEY = "Sua chave aqui!"; // Deve ser o nome da variável de ambiente
+    private static final String API_URL = "https://v6.exchangerate-api.com/v6/" + API_KEY + "/latest/USD";
+    private static final Scanner scanner = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        boolean continuar = true;
+
+        while (continuar) {
+            exibirMenu();
+            int opcao = lerOpcaoValida();
+
+            if (opcao == 7) {
+                continuar = false;
+                System.out.println("Obrigado por usar o conversor de moedas!");
+            } else if (opcao >= 1 && opcao <= 6) {
+                String[] moedas = obterMoedasParaConversao(opcao);
+                converterMoeda(moedas[0], moedas[1]);
+            } else {
+                System.out.println("Opção inválida. Por favor, tente novamente.");
+            }
+        }
+        scanner.close();
+    }
+
+    private static double obterTaxaCambio(String de, String para) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) URI.create(API_URL).toURL().openConnection();
+        conn.setRequestMethod("GET");
+
+        if (conn.getResponseCode() != 200) {
+            throw new RuntimeException("Erro HTTP: " + conn.getResponseCode());
+        }
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        String response = reader.lines().collect(Collectors.joining());
+        reader.close();
+
+        JsonObject jsonObject = JsonParser.parseString(response).getAsJsonObject();
+        JsonObject taxas = jsonObject.getAsJsonObject("conversion_rates");
+
+        double taxaDe = taxas.get(de).getAsDouble();
+        double taxaPara = taxas.get(para).getAsDouble();
+
+        return taxaPara / taxaDe;
+    }
+
+    private static void exibirMenu() {
+        System.out.println("\n--- Conversor de Moedas ---");
+        System.out.println("1. Dólar para Peso Argentino");
+        System.out.println("2. Peso Argentino para Dólar");
+        System.out.println("3. Dólar para Real Brasileiro");
+        System.out.println("4. Peso Colombiano para Dólar");
+        System.out.println("5. Euro para Dólar");
+        System.out.println("6. Yuan Chinês para Dólar");
+        System.out.println("7. Sair");
+        System.out.print("Escolha uma opção: ");
+    }
+
+    private static int lerOpcaoValida() {
+        while (!scanner.hasNextInt()) {
+            System.out.println("Por favor, digite um número válido.");
+            scanner.next();
+        }
+        return scanner.nextInt();
+    }
+
+    private static String[] obterMoedasParaConversao(int opcao) {
+        return switch (opcao) {
+            case 1 -> new String[]{"USD", "ARS"};
+            case 2 -> new String[]{"ARS", "USD"};
+            case 3 -> new String[]{"USD", "BRL"};
+            case 4 -> new String[]{"COP", "USD"};
+            case 5 -> new String[]{"EUR", "USD"};
+            case 6 -> new String[]{"CNY", "USD"};
+            default -> throw new IllegalArgumentException("Opção inválida");
+        };
+    }
+
+    private static void converterMoeda(String de, String para) {
+        try {
+            double taxa = obterTaxaCambio(de, para);
+
+            System.out.print("Digite o valor a ser convertido: ");
+            double valor = lerValorValido();
+
+            double resultado = valor * taxa;
+            System.out.printf("%.2f %s = %.2f %s%n", valor, de, resultado, para);
+
+        } catch (Exception e) {
+            System.out.println("Erro ao converter moeda: " + e.getMessage());
+        }
+    }
+
+    private static double lerValorValido() {
+        while (!scanner.hasNextDouble()) {
+            System.out.println("Por favor, digite um valor numérico válido.");
+            scanner.next();
+        }
+        return scanner.nextDouble();
+    }
+}
