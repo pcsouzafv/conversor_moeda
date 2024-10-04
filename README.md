@@ -1,6 +1,7 @@
 # Conversor de Moedas
 
 Este projeto é um conversor de moedas que utiliza a API ExchangeRate para obter taxas de câmbio em tempo real. O programa é desenvolvido em Java e permite a conversão de diversas moedas, como dólar, euro, real brasileiro, entre outras.
+![image](https://github.com/user-attachments/assets/97f87e84-f9f0-4f3f-b0c7-27bf863e1367)
 
 ## Requisitos
 
